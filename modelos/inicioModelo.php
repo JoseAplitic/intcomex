@@ -8,46 +8,27 @@
 	class inicioModelo extends mainModel
 	{
 
-		protected function cargar_datos_home_modelo(){
-			$sql=mainModel::conectar()->prepare("SELECT * FROM vistas WHERE vista = 'home';");
+		protected function verificar_slug($slug)
+		{
+			$sql=mainModel::conectar()->prepare("SELECT * FROM taxonomias WHERE slug = :Slug AND taxonomia = 'categoria';");
+            $sql->bindParam(":Slug",$slug);
 			$sql->execute();
 			return $sql;
-        }
+		}
 
-        protected function obtener_info_medio_modelo($id)
-        {
-            $sql=mainModel::conectar()->prepare("SELECT titulo, url FROM medios WHERE id = :Id;");
-            $sql->bindParam(":Id",$id);
+		protected function verificar_marca_slug($slug)
+		{
+			$sql=mainModel::conectar()->prepare("SELECT * FROM taxonomias WHERE slug = :Slug AND taxonomia = 'marca';");
+            $sql->bindParam(":Slug",$slug);
 			$sql->execute();
 			return $sql;
-        }
+		}
 
-		protected function cargar_categorias_superiores_modelo(){
-			$sql=mainModel::conectar()->prepare("SELECT nombre, slug, icono FROM taxonomias WHERE taxonomia = 'categoria' AND (padre = 0 OR padre = NULL) ORDER BY nombre ASC;");
+		protected function verificar_producto_slug($slug)
+		{
+			$sql=mainModel::conectar()->prepare("SELECT * FROM productos WHERE slug = :Slug;");
+            $sql->bindParam(":Slug",$slug);
 			$sql->execute();
 			return $sql;
-        }
-
-        protected function obtener_info_categoria_modelo($id)
-        {
-            $sql=mainModel::conectar()->prepare("SELECT nombre, slug FROM taxonomias WHERE id = :Id;");
-            $sql->bindParam(":Id",$id);
-			$sql->execute();
-			return $sql;
-        }
-
-        protected function obtener_info_marca_modelo($id)
-        {
-            $sql=mainModel::conectar()->prepare("SELECT nombre, slug, icono FROM taxonomias WHERE id = :Id;");
-            $sql->bindParam(":Id",$id);
-			$sql->execute();
-			return $sql;
-        }
-
-		protected function cargar_categorias_superiores_slider_modelo(){
-			$sql=mainModel::conectar()->prepare("SELECT nombre, slug, icono2 FROM taxonomias WHERE taxonomia = 'categoria' AND (padre = 0 OR padre = NULL) ORDER BY nombre ASC;");
-			$sql->execute();
-			return $sql;
-        }
-        
+		}
 	}
