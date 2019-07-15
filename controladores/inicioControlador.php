@@ -189,9 +189,8 @@
 
         public function actualizar_producto_controlador($datos)
         {
-			$sql=mainModel::conectar()->prepare("UPDATE productos SET nombre = :Nombre, descripcion = :Descripcion, mpn = :Mpn, fabricante = :Fabricante, tipo = :Tipo, nuevo = :Nuevo, fecha = :Fecha);");
-			$sql->bindParam(":Nombre",$datos["Nombre"]);
-			$sql->bindParam(":Descripcion",$datos["Descripcion"]);
+			$sql=mainModel::conectar()->prepare("UPDATE productos SET mpn = :Mpn, fabricante = :Fabricante, tipo = :Tipo, nuevo = :Nuevo, fecha = :Fecha WHERE sku = :Sku;");
+			$sql->bindParam(":Sku",$datos["Sku"]);
 			$sql->bindParam(":Mpn",$datos["Mpn"]);
 			$sql->bindParam(":Fabricante",$datos["Fabricante"]);
 			$sql->bindParam(":Tipo",$datos["Tipo"]);
@@ -230,5 +229,22 @@
         /* Convertir texto a slug */
         public function url_slug($string){
             return strtolower(trim(preg_replace('~[^0-9a-z]+~i', '-', html_entity_decode(preg_replace('~&([a-z]{1,2})(?:acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml);~i', '$1', htmlentities($string, ENT_QUOTES, 'UTF-8')), ENT_QUOTES, 'UTF-8')), '-'));
+        }
+
+        /* Controladores para colocar los datos de venta */
+        public function actualizar_datos_venta_controlador($datos)
+        {
+            $onsale = "no";
+            if($datos["Onsale"])
+            {
+                $onsale = "si";
+            }
+			$sql=mainModel::conectar()->prepare("UPDATE productos SET precio = :Precio, stock = :Stock, oferta = :Onsale WHERE sku = :Sku;");
+			$sql->bindParam(":Precio",$datos["Precio"]);
+			$sql->bindParam(":Stock",$datos["Stock"]);
+			$sql->bindParam(":Onsale",$onsale);
+			$sql->bindParam(":Sku",$datos["Sku"]);
+			$sql->execute();
+			return $sql;
         }
     }

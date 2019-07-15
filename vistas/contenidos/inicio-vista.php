@@ -7,6 +7,7 @@
 	$CategoriasNuevas=0;
 	$MarcasNuevas=0;
 	$relacionesCreadas = 0;
+	$datosVentaActualizados = 0;
 
 	/* Parametros HTTP Request API Intcomex */
 	$apiKey = "7b39a118-84ac-4245-9ae2-da0a4de4cc9f";
@@ -19,7 +20,7 @@
 	$signature = hash("sha256", $claveFirma);
 
 	/* Cargar los datos de los productos */
-	$url = "https://intcomex-test.apigee.net/v1/getCatalog?apiKey=$apiKey&utcTimeStamp=$fecha&locale=es&signature=$signature&locale=es";
+	$url = "https://intcomex-test.apigee.net/v1/getcatalog?apiKey=$apiKey&utcTimeStamp=$fecha&locale=es&signature=$signature&locale=es";
 	$productos = json_decode(file_get_contents($url));
 
 	/* Recoleccion de categorias */
@@ -149,18 +150,18 @@
 	foreach ($productos as $producto)
 	{
 		$nuevo = "";
-		if($producto->New){
-			$nuevo = "si";
-		}
-		else{
-			$nuevo = "no";
-		}
+		// Pendiente de actualizar -- El api ya no devuelve el parametro new
+		// if($producto->New){
+		// 	$nuevo = "si";
+		// }
+		// else{
+		// 	$nuevo = "no";
+		// }
 		$verificarProducto = $instancia->verificar_producto_controlador($producto->Sku);
 		if($verificarProducto->rowCount()>0)
 		{
 			$datosProducto = [
-				"Nombre"=>$producto->Description,
-				"Descripcion"=>$producto->Description,
+				"Sku"=>$producto->Sku,
 				"Mpn"=>$producto->Mpn,
 				"Fabricante"=>$producto->Manufacturer->Description,
 				"Tipo"=>$producto->Type,
@@ -247,12 +248,26 @@
 		}
 	}
 
-	// /* Cargar los datos de venta de los productos */
-	// $url = "https://intcomex-test.apigee.net/v1/getcatalogsalesdata?apiKey=$apiKey&utcTimeStamp=$fecha&locale=es&signature=$signature&locale=es";
-	// $datosVenta = json_decode(file_get_contents($url));
+	/* Cargar los datos de venta de los productos */
+	$url = "https://intcomex-test.apigee.net/v1/getcatalogsalesdata?apiKey=$apiKey&utcTimeStamp=$fecha&locale=es&signature=$signature&locale=es";
+	$datosVenta = json_decode(file_get_contents($url));
 
-	// foreach ($datosVenta as $dato)
-	// {
-	// 	print_r($dato);
-	// }
+	foreach ($datosVenta as $dato)
+	{
+		$dataVenta = [
+			"Sku" => $dato->Sku,
+			"Precio" => get_object_vars($dato->Price)["UnitPrice"],
+			"Stock" => $dato->InStock,
+			"Onsale" => $dato->OnSale
+		];
+
+		$actualizarDatosVenta = $instancia->actualizar_datos_venta_controlador($dataVenta);
+		if($actualizarDatosVenta->rowCount()>0)
+		{
+			$datosVentaActualizados++;
+		}
+
+	}
+
+	echo "Productos nuevos: ".$productosNuevos."<br>Productos actualizados: ".$productosActualizados."<br>Datos venta actualizados: ".$datosVentaActualizados."<br>Categorias nuevas: ".$CategoriasNuevas."<br>Marcas nuevas: ".$MarcasNuevas;
 ?>
